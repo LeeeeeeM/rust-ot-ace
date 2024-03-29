@@ -19,9 +19,10 @@ pub struct RustDoc {
     notify: Notify,
 }
 
-#[derive(Default)]
-struct State {
+#[derive(Default, Serialize, Deserialize)]
+pub struct State {
     text: String,
+    count: u64
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -47,6 +48,7 @@ impl RustDoc {
     pub fn new() -> Self {
         let state = State {
             text: String::from("rust_doc"),
+            count: 0
         };
         RustDoc {
             state: RwLock::new(state),
@@ -58,6 +60,16 @@ impl RustDoc {
     pub fn text(&self) -> String {
         let state = self.state.read();
         state.text.clone()
+    }
+
+    pub fn json(&self) -> State {
+        let mut state = self.state.write();
+        (*state).count += 1;
+        // let state = self.state.read();
+        State {
+            count: state.count,
+            text: state.text.clone()
+        }
     }
 
     pub async fn on_connection(&self, socket: WebSocket) {

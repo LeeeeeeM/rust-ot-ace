@@ -8,6 +8,22 @@ import { getWsUri } from "./utils";
 function App() {
   const [count, setCount] = useState(0);
   const rustDoc = useRef<RustDoc>();
+  const timerRef = useRef<number>(0);
+
+  useEffect(() => {
+    timerRef.current = setInterval(() => {
+      fetch('/api/json').then(data => data.json()).then((data) => {
+        console.log(data);
+      }).catch();
+    }, 1000);
+
+    return () => {
+      console.log('destory');
+      clearInterval(timerRef.current);
+      timerRef.current = 0;
+    };
+
+  }, []);
 
   useEffect(() => {
     if (rustDoc.current) return;

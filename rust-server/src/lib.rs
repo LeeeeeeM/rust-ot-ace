@@ -1,6 +1,6 @@
 use business::RustDoc;
 use std::sync::Arc;
-use warp::{any, filters::BoxedFilter, path, ws, ws::Ws, Filter, Reply};
+use warp::{any, filters::{ws::{ws, Ws}, BoxedFilter}, path, reply, Filter, Reply};
 
 mod business;
 
@@ -42,7 +42,20 @@ fn routes() -> BoxedFilter<(impl Reply,)> {
         .and(rust_doc.clone())
         .map(|rust_doc: Arc<RustDoc>| rust_doc.text());
 
-    socket.or(text).boxed()
+    let json = api_prefix
+        .and(path("json"))
+        // .and(path::param())
+        .and(path::end())
+        .and(rust_doc.clone())
+        .map(|rust_doc: Arc<RustDoc>| {
+            let state = rust_doc.json();
+
+            let json = serde_json::to_string(&state).unwrap();
+            println!("{}", json);
+            reply::json(&state)
+        });
+
+    socket.or(text).or(json).boxed()
 }
 
 #[cfg(test)]
