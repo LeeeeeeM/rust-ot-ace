@@ -2,3 +2,5 @@ rust-server/target
 
 rust-fe/node_modules
 
+rust-wasm/target
+

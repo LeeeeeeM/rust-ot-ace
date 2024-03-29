@@ -4,25 +4,30 @@ import viteLogo from "/vite.svg";
 import "./App.css";
 import RustDoc from "./components/RustDoc";
 import { getWsUri } from "./utils";
+import { gen_hello_string } from "rust-wasm";
 
 function App() {
   const [count, setCount] = useState(0);
   const rustDoc = useRef<RustDoc>();
   const timerRef = useRef<number>(0);
 
+  console.log(gen_hello_string("rust_doc"));
+
   useEffect(() => {
     timerRef.current = setInterval(() => {
-      fetch('/api/json').then(data => data.json()).then((data) => {
-        console.log(data);
-      }).catch();
+      fetch("/api/json")
+        .then((data) => data.json())
+        .then((data) => {
+          console.log(data);
+        })
+        .catch();
     }, 1000);
 
     return () => {
-      console.log('destory');
+      console.log("destory");
       clearInterval(timerRef.current);
       timerRef.current = 0;
     };
-
   }, []);
 
   useEffect(() => {
@@ -30,10 +35,10 @@ function App() {
     rustDoc.current = new RustDoc({
       uri: getWsUri(),
       onConnected: () => {
-        console.log('connected!!!')
+        console.log("connected!!!");
       },
       onDisconnected: () => {
-        console.log('disconnected!!!')
+        console.log("disconnected!!!");
       },
     });
   }, []);
