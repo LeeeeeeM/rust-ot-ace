@@ -1,1 +1,4 @@
-/target
+rust-server/target
+
+rust-fe/node_modules
+

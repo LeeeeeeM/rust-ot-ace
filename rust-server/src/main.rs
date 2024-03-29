@@ -8,8 +8,6 @@ async fn main() {
     dotenv::dotenv().ok();
     pretty_env_logger::init();
 
-    println!("Hello, world!");
-
     let port = std::env::var("PORT")
         .unwrap_or_else(|_| String::from("3030"))
         .parse()
