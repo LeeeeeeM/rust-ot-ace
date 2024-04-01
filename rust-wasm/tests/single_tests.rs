@@ -8,7 +8,6 @@ fn compose_operation() {
     b.retain(3);
     b.insert("def");
     let after_a = a.apply("").unwrap();
-    println!("{:?}, {:?}", a, b);
     let after_b = b.apply(&after_a).unwrap();
     let after_ab = a.compose(&b).unwrap().apply("").unwrap();
     assert_eq!(after_ab, after_b);

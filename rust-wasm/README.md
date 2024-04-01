@@ -1,5 +1,5 @@
 # test
-cargo test --test single_test
+cargo test --test single_tests
 
 # build 
 wasm-pack build rust-wasm (when use it, remove `init` fn in the main.tsx)

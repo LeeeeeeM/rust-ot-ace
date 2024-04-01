@@ -15,9 +15,11 @@ function App() {
   useEffect(() => {
     if (activeRef.current) return;
     console.log(gen_hello_string("rust_doc"));
-    console.log(OpSeq);
-    const a = new Test(123, "xxx");
-    console.log(a, a.get_age(), a.get_name());
+    const a = new Test(12, "SLM");
+    const c = new OpSeq();
+    console.log(a, a.get_age(), a.get_name(), c);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).Op = OpSeq;
     activeRef.current = true;
   }, []);
 
