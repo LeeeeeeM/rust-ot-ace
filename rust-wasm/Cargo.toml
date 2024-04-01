@@ -9,5 +9,6 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+js-sys = "0.3.69"
 operational-transform = "0.6.1"
 wasm-bindgen = "0.2.92"

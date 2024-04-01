@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [react(), wasm(), topLevelAwait()],
   optimizeDeps: {
     exclude: ["rust-wasm"],
-},
+  },
   server: {
     proxy: {
       // 使用 proxy 实例

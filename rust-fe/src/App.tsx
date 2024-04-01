@@ -4,16 +4,25 @@ import viteLogo from "/vite.svg";
 import "./App.css";
 import RustDoc from "./components/RustDoc";
 import { getWsUri } from "./utils";
-import { gen_hello_string } from "rust-wasm";
+import { gen_hello_string, OpSeq, Test } from "rust-wasm";
 
 function App() {
   const [count, setCount] = useState(0);
   const rustDoc = useRef<RustDoc>();
   const timerRef = useRef<number>(0);
-
-  console.log(gen_hello_string("rust_doc"));
+  const activeRef = useRef<boolean>(false);
 
   useEffect(() => {
+    if (activeRef.current) return;
+    console.log(gen_hello_string("rust_doc"));
+    console.log(OpSeq);
+    const a = new Test(123, "xxx");
+    console.log(a, a.get_age(), a.get_name());
+    activeRef.current = true;
+  }, []);
+
+  useEffect(() => {
+    return;
     timerRef.current = setInterval(() => {
       fetch("/api/json")
         .then((data) => data.json())
