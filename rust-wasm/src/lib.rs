@@ -1,4 +1,7 @@
-use operational_transform::OperationSeq;
+use operational_transform::{Operation, OperationSeq};
+use serde::{Deserialize, Serialize};
+use serde_json;
+use std::cmp;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -6,8 +9,8 @@ pub fn gen_hello_string(a: &str) -> String {
     format!("hello, {}!", a)
 }
 
-#[wasm_bindgen]
-#[derive(Clone, Default)]
+#[wasm_bindgen] // Clone [clone], PartialEq, Debug [test]
+#[derive(Clone, Default, Serialize, Deserialize, PartialEq, Debug)]
 pub struct OpSeq(OperationSeq);
 
 #[wasm_bindgen] // for transform
@@ -85,5 +88,57 @@ impl OpSeq {
     pub fn transform(&self, other: &OpSeq) -> Option<OpSeqPair> {
         let (a, b) = self.0.transform(&other.0).ok()?;
         Some(OpSeqPair(Self(a), Self(b)))
+    }
+
+    #[inline]
+    pub fn is_noop(&self) -> bool {
+        self.0.is_noop()
+    }
+
+    #[inline]
+    pub fn base_len(&self) -> usize {
+        self.0.base_len()
+    }
+
+    #[inline]
+    pub fn target_len(&self) -> usize {
+        self.0.target_len()
+    }
+
+    pub fn from_str(s: &str) -> OpSeq {
+        serde_json::from_str(s).expect("json deserialization failure")
+    }
+
+    pub fn to_string(&self) -> String {
+        serde_json::to_string(self).expect("json serialization failure")
+    }
+
+    // find current position
+    pub fn transform_index(&self, position: u32) -> u32 {
+        let mut new_index = position as i32;
+        let mut index = position as i32;
+        // println!("{:?} ----- ops", self.0.ops());
+        for op in self.0.ops() {
+            match op {
+                Operation::Insert(s) => {
+                    let n = bytecount::num_chars(s.as_bytes()) as i32;
+                    new_index += n;
+                }
+                Operation::Retain(n) => {
+                    let n = *n as i32;
+                    index -= n;
+                }
+                Operation::Delete(n) => {
+                    let n = *n as i32;
+                    new_index -= cmp::min(index, n);
+                    index -= n;
+                }
+            }
+            // justify every loop
+            if index < 0 {
+                break;
+            }
+        }
+        new_index as u32
     }
 }
