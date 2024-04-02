@@ -1,3 +1,6 @@
+
+import { OpSeq } from "rust-wasm";
+
 /** Options passed in to the RustDoc constructor. */
 export type RustDocOptions = {
   readonly uri: string;
@@ -54,7 +57,14 @@ class RustDoc {
     console.log(msg);
   }
 
+  public sendOperation(operation: OpSeq) {
+    const op = operation.to_string();
+    this.ws?.send(`{"Edit":{"operation":${op}}}`);
+  }
 
+  getWs() {
+    return this.ws;
+  }
 }
 
 interface ServerMessage {

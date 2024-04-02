@@ -4,27 +4,23 @@ import viteLogo from "/vite.svg";
 import "./App.css";
 import RustDoc from "./components/RustDoc";
 import { getWsUri } from "./utils";
-import { gen_hello_string, OpSeq, Test } from "rust-wasm";
+import { gen_hello_string, OpSeq } from "rust-wasm";
+
+window.OpSeq = OpSeq;
 
 function App() {
   const [count, setCount] = useState(0);
-  const rustDoc = useRef<RustDoc>();
+  const rustDoc = useRef<RustDoc | null>(null);
   const timerRef = useRef<number>(0);
   const activeRef = useRef<boolean>(false);
 
   useEffect(() => {
     if (activeRef.current) return;
     console.log(gen_hello_string("rust_doc"));
-    const a = new Test(12, "SLM");
-    const c = new OpSeq();
-    console.log(a, a.get_age(), a.get_name(), c);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).Op = OpSeq;
     activeRef.current = true;
   }, []);
 
   useEffect(() => {
-    return;
     timerRef.current = setInterval(() => {
       fetch("/api/json")
         .then((data) => data.json())
@@ -32,10 +28,10 @@ function App() {
           console.log(data);
         })
         .catch();
-    }, 1000);
+    }, 1000 * 1000);
 
     return () => {
-      console.log("destory");
+      console.log("--- destoryed ---");
       clearInterval(timerRef.current);
       timerRef.current = 0;
     };
@@ -46,6 +42,13 @@ function App() {
     rustDoc.current = new RustDoc({
       uri: getWsUri(),
       onConnected: () => {
+        const op = new OpSeq();
+        // op.retain(3);
+        op.insert('xyz');
+        // op.retain(3);
+        op.insert('abc');
+        console.log(op)
+        rustDoc.current?.sendOperation(op);
         console.log("connected!!!");
       },
       onDisconnected: () => {

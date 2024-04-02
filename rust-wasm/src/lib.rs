@@ -4,10 +4,7 @@ use serde_json;
 use std::cmp;
 use wasm_bindgen::prelude::*;
 
-#[wasm_bindgen]
-pub fn gen_hello_string(a: &str) -> String {
-    format!("hello, {}!", a)
-}
+mod util;
 
 #[wasm_bindgen] // Clone [clone], PartialEq, Debug [test]
 #[derive(Clone, Default, Serialize, Deserialize, PartialEq, Debug)]
@@ -25,31 +22,6 @@ impl OpSeqPair {
 
     pub fn second(&self) -> OpSeq {
         self.1.clone()
-    }
-}
-
-#[wasm_bindgen]
-pub struct Test {
-    name: String,
-    age: usize,
-}
-
-#[wasm_bindgen]
-impl Test {
-    #[wasm_bindgen(constructor)]
-    pub fn new(age: usize, name: &str) -> Self {
-        Self {
-            age,
-            name: name.to_string(),
-        }
-    }
-
-    pub fn get_name(&self) -> String {
-        self.name.clone()
-    }
-
-    pub fn get_age(&self) -> usize {
-        self.age
     }
 }
 
