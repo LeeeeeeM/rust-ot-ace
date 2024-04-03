@@ -104,10 +104,19 @@ impl RustDoc {
             let state = self.state.read();
 
             if !state.operations.is_empty() {
-                messages.push(state.operations.clone());
+                messages.push(ServerMessage::History {
+                    start: 0,
+                    operations: state.operations.clone(),
+                });
             }
             state.operations.len()
         };
+
+        for msg in messages {
+            socket.send(msg.into()).await?;
+        }
+
+        println!("{} ----- revision", revision);
 
         Ok(revision)
     }
