@@ -23,6 +23,8 @@ export default defineConfig({
         configure: () => {},
       },
     },
+    host: '0.0.0.0',
+    port: 3002,
     fs: {
       // Allow serving files from one level up to the project root
       allow: ['..'],

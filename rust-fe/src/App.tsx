@@ -1,6 +1,10 @@
 import { useState, useRef, useEffect } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
+import ReactAce from "react-ace";
+import { Ace } from "ace-builds";
+import "ace-builds/src-noconflict/mode-sqlserver";
+import "ace-builds/src-noconflict/theme-sqlserver";
+// import reactLogo from "./assets/react.svg";
+// import viteLogo from "/vite.svg";
 import "./App.css";
 import RustDoc from "./components/RustDoc";
 import { getWsUri } from "./utils";
@@ -9,11 +13,14 @@ import { gen_hello_string, OpSeq } from "rust-wasm";
 window.OpSeq = OpSeq;
 
 function App() {
-  const [count, setCount] = useState(0);
+  const [isActive, setIsActive] = useState(false);
   const rustDoc = useRef<RustDoc | null>(null);
   const timerRef = useRef<number>(0);
   const activeRef = useRef<boolean>(false);
+  const [editor, setEditor] = useState<Ace.Editor | null>(null);
+  const [value, setValue] = useState<string>("");
 
+  // test wasm
   useEffect(() => {
     if (activeRef.current) return;
     console.log(gen_hello_string("rust_doc"));
@@ -38,47 +45,45 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (rustDoc.current) return;
-    rustDoc.current = new RustDoc({
-      uri: getWsUri(),
-      onConnected: () => {
-        const op = new OpSeq();
-        // op.retain(3);
-        op.insert('xyz');
-        // op.retain(3);
-        op.insert('abc');
-        console.log(op)
-        rustDoc.current?.sendOperation(op);
-        console.log("connected!!!");
-      },
-      onDisconnected: () => {
-        console.log("disconnected!!!");
-      },
-    });
-  }, []);
+    if (editor) {
+      rustDoc.current = new RustDoc({
+        uri: getWsUri(),
+        onConnected: () => {
+          console.log("connected!!!");
+        },
+        onDisconnected: () => {
+          console.log("disconnected!!!");
+        },
+        editor,
+      });
+    }
+  }, [editor]);
 
   return (
     <>
+      <h1>Ace OT Editor</h1>
       <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        <div className="card">
+          <button onClick={() => setIsActive((active) => !active)}>
+            Edit Active: {`${isActive}`}
+          </button>
+        </div>
+        <div className="editor-box">
+          <ReactAce
+            readOnly={!isActive}
+            onLoad={(editor) => {
+              setEditor(editor);
+            }}
+            name="query-ace-editor"
+            theme="sqlserver"
+            mode="sqlserver"
+            value={value}
+            onChange={(value) => {
+              setValue(value);
+            }}
+          />
+        </div>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
   );
 }

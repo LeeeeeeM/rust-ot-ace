@@ -2,14 +2,13 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 use futures::prelude::*;
 
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, bail};
 use log::{info, warn};
 use operational_transform::OperationSeq;
 use parking_lot::{RwLock, RwLockUpgradableReadGuard};
 use serde::{Deserialize, Serialize};
 use tokio::sync::{broadcast, Notify};
 use warp::filters::ws::{Message, WebSocket};
-
 
 pub struct RustDoc {
     state: RwLock<State>,
@@ -43,7 +42,10 @@ enum ServerMessage {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 enum ClientMessage {
-    Edit { operation: OperationSeq },
+    Edit {
+        operation: OperationSeq,
+        revision: usize,
+    },
 }
 
 impl From<ServerMessage> for Message {
@@ -56,11 +58,12 @@ impl From<ServerMessage> for Message {
 impl RustDoc {
     pub fn new() -> Self {
         let (tx, _) = broadcast::channel(16);
-        let state = State {
-            text: String::from("rust_doc"),
-            count: 0,
-            operations: vec![],
-        };
+        // let state = State {
+        //     text: String::from("rust_doc"),
+        //     count: 0,
+        //     operations: vec![],
+        // };
+        let state = Default::default();
         RustDoc {
             state: RwLock::new(state),
             count: AtomicU64::new(0),
@@ -81,7 +84,7 @@ impl RustDoc {
         State {
             count: state.count,
             text: state.text.clone(),
-            operations: vec![],
+            operations: state.operations.clone(),
         }
     }
 
@@ -115,9 +118,7 @@ impl RustDoc {
         for msg in messages {
             socket.send(msg.into()).await?;
         }
-
-        println!("{} ----- revision", revision);
-
+        // println!("------- revision: {} -------", revision);
         Ok(revision)
     }
 
@@ -156,6 +157,7 @@ impl RustDoc {
 
         loop {
             let notified = self.notify.notified();
+            // update revision & send
             if self.revision() > revision {
                 revision = self.send_history(revision, &mut socket).await?;
             }
@@ -180,33 +182,39 @@ impl RustDoc {
     }
 
     async fn handle_message(&self, id: u64, message: Message) -> Result<()> {
-        println!("{:?}", message.to_str());
+        // println!("{:?}", message.to_str());
         let msg: ClientMessage = match message.to_str() {
             Ok(text) => serde_json::from_str(text).context("failed to deserialize message")?,
             Err(()) => return Ok(()), // Ignore non-text messages
         };
 
         match msg {
-            ClientMessage::Edit { operation } => {
-                println!("{:?}, {}", operation, id);
-                self.apply_edit(id, operation).context("invalid edit operation")?;
+            ClientMessage::Edit {
+                operation,
+                revision,
+            } => {
+                self.apply_edit(id, revision, operation)
+                    .context("invalid edit operation")?;
                 self.notify.notify_waiters();
             }
         }
         Ok(())
     }
 
-    fn apply_edit(&self, id: u64, mut operation: OperationSeq) -> Result<()> {
+    fn apply_edit(&self, id: u64, revision: usize, mut operation: OperationSeq) -> Result<()> {
         let state = self.state.upgradable_read();
-        // for history_op in &state.operations[..] {
-        //     operation = operation.transform(&history_op.operation)?.0;
-        // }
-        // operation = OperationSeq::default();
-        // operation.insert("1");
-        // let new_text = operation.apply(&state.text)?;
+        let len = state.operations.len();
+        if revision > len {
+            bail!("got revision {}, but current is {}", revision, len);
+        }
+        // println!("Text: {}, Operation: {:?}, revision: {}", state.text, operation, revision);
+        for history_op in &state.operations[revision..] {
+            operation = operation.transform(&history_op.operation)?.0;
+        }
+        let new_text = operation.apply(&state.text)?;
         let mut state = RwLockUpgradableReadGuard::upgrade(state);
         state.operations.push(UserOperation { id, operation });
-        // state.text = new_text;
+        state.text = new_text;
         Ok(())
     }
 }
