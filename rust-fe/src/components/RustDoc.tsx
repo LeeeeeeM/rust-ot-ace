@@ -8,6 +8,7 @@ export type RustDocOptions = {
   readonly onDisconnected?: () => unknown;
   readonly reconnectInterval?: number;
   readonly editor: Ace.Editor;
+  readonly onPolling: (operation: UserOperation) => void;
   // readonly setValue: (value: string) => void;
 };
 
@@ -100,6 +101,7 @@ class RustDoc {
       for (let i = this.revision - start; i < operations.length; i++) {
         const { id, operation } = operations[i];
         this.revision++;
+        this.options.onPolling(operations[i]);
         if (id === this.me) {
           console.log("this is me, ignore...");
         } else {
@@ -186,7 +188,7 @@ class RustDoc {
   }
 }
 
-interface UserOperation {
+export interface UserOperation {
   id: number;
   operation: unknown;
 }

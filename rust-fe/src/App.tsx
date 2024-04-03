@@ -6,7 +6,7 @@ import "ace-builds/src-noconflict/theme-sqlserver";
 // import reactLogo from "./assets/react.svg";
 // import viteLogo from "/vite.svg";
 import "./App.css";
-import RustDoc from "./components/RustDoc";
+import RustDoc, { UserOperation } from "./components/RustDoc";
 import { getWsUri } from "./utils";
 import { gen_hello_string, OpSeq } from "rust-wasm";
 
@@ -54,6 +54,9 @@ function App() {
         onDisconnected: () => {
           console.log("disconnected!!!");
         },
+        onPolling: (operation: UserOperation) => {
+          console.log(operation);
+        },
         editor,
       });
     }
@@ -62,27 +65,25 @@ function App() {
   return (
     <>
       <h1>Ace OT Editor</h1>
-      <div>
-        <div className="card">
-          <button onClick={() => setIsActive((active) => !active)}>
-            Edit Active: {`${isActive}`}
-          </button>
-        </div>
-        <div className="editor-box">
-          <ReactAce
-            readOnly={!isActive}
-            onLoad={(editor) => {
-              setEditor(editor);
-            }}
-            name="query-ace-editor"
-            theme="sqlserver"
-            mode="sqlserver"
-            value={value}
-            onChange={(value) => {
-              setValue(value);
-            }}
-          />
-        </div>
+      <div className="card">
+        <button onClick={() => setIsActive((active) => !active)}>
+          Editor Locked: {`${!isActive}`}
+        </button>
+      </div>
+      <div className="editor-box">
+        <ReactAce
+          readOnly={!isActive}
+          onLoad={(editor) => {
+            setEditor(editor);
+          }}
+          name="query-ace-editor"
+          theme="sqlserver"
+          mode="sqlserver"
+          value={value}
+          onChange={(value) => {
+            setValue(value);
+          }}
+        />
       </div>
     </>
   );
