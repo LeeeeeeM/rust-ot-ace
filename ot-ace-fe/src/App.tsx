@@ -67,7 +67,7 @@ function App() {
       <h1>Ace OT Editor</h1>
       <div className="card">
         <button onClick={() => setIsActive((active) => !active)}>
-          Editor Locked: {`${!isActive}`}
+          Editor {`${!isActive ? 'Locked' : 'Opened'}`}
         </button>
       </div>
       <div className="editor-box">
