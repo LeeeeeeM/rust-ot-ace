@@ -1,6 +1,6 @@
 rust-server/target
 
-rust-fe/node_modules
+ot-ace-fe/node_modules
 
-rust-wasm/target
+ot-wasm/target
 

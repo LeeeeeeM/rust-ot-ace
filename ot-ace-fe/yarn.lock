@@ -1102,6 +1102,9 @@ optionator@^0.9.3:
     prelude-ls "^1.2.1"
     type-check "^0.4.0"
 
+"ot-wasm@file:../ot-wasm/pkg":
+  version "0.1.0"
+
 p-limit@^3.0.2:
   version "3.1.0"
   resolved "http://npm.fe.sensorsdata.cn/p-limit/-/p-limit-3.1.0.tgz#e1daccbe78d0d1388ca18c64fea38e3e57e3706b"
@@ -1263,9 +1266,6 @@ run-parallel@^1.1.9:
   integrity sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA==
   dependencies:
     queue-microtask "^1.2.2"
-
-"rust-wasm@file:../rust-wasm/pkg":
-  version "0.1.0"
 
 scheduler@^0.23.0:
   version "0.23.0"

@@ -1,4 +1,4 @@
-import { OpSeq } from "rust-wasm";
+import { OpSeq } from "ot-wasm";
 import { Ace } from "ace-builds";
 
 /** Options passed in to the RustDoc constructor. */

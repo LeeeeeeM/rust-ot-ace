@@ -1,7 +1,7 @@
 // import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
-import init from "rust-wasm";
+import init from "ot-wasm";
 import './index.css'
 
 init().then(() => {

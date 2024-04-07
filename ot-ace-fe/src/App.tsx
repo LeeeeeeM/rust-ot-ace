@@ -8,7 +8,7 @@ import "ace-builds/src-noconflict/theme-sqlserver";
 import "./App.css";
 import RustDoc, { UserOperation } from "./components/RustDoc";
 import { getWsUri } from "./utils";
-import { gen_hello_string, OpSeq } from "rust-wasm";
+import { gen_hello_string, OpSeq } from "ot-wasm";
 
 window.OpSeq = OpSeq;
 
