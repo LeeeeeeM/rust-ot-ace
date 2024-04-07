@@ -1,7 +1,6 @@
-use operational_transform::{Operation, OperationSeq};
+use operational_transform::OperationSeq;
 use serde::{Deserialize, Serialize};
 use serde_json;
-use std::cmp;
 use wasm_bindgen::prelude::*;
 
 mod util;
@@ -83,34 +82,5 @@ impl OpSeq {
 
     pub fn to_string(&self) -> String {
         serde_json::to_string(self).expect("json serialization failure")
-    }
-
-    // find current position
-    pub fn transform_index(&self, position: u32) -> u32 {
-        let mut new_index = position as i32;
-        let mut index = position as i32;
-        // println!("{:?} ----- ops", self.0.ops());
-        for op in self.0.ops() {
-            match op {
-                Operation::Insert(s) => {
-                    let n = bytecount::num_chars(s.as_bytes()) as i32;
-                    new_index += n;
-                }
-                Operation::Retain(n) => {
-                    let n = *n as i32;
-                    index -= n;
-                }
-                Operation::Delete(n) => {
-                    let n = *n as i32;
-                    new_index -= cmp::min(index, n);
-                    index -= n;
-                }
-            }
-            // justify every loop
-            if index < 0 {
-                break;
-            }
-        }
-        new_index as u32
     }
 }
