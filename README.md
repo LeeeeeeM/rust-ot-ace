@@ -1,5 +1,8 @@
 # Rust Ws Server
 
+## Inspired By
+https://github.com/ekzhang/rustpad
+
 ## Getting started
 
 ### rust-server
