@@ -6,9 +6,9 @@ import "ace-builds/src-noconflict/theme-sqlserver";
 // import reactLogo from "./assets/react.svg";
 // import viteLogo from "/vite.svg";
 import "./App.css";
-import RustDoc, { UserOperation } from "./components/RustDoc";
+import RustDoc from "./components/RustDoc";
 import { getWsUri } from "./utils";
-import { gen_hello_string, OpSeq, OpSeqPair } from "ot-wasm";
+import { gen_hello_string, OpSeq } from "ot-wasm";
 
 window.OpSeq = OpSeq;
 
@@ -19,10 +19,6 @@ function App() {
   const activeRef = useRef<boolean>(false);
   const [editor, setEditor] = useState<Ace.Editor | null>(null);
   const [value, setValue] = useState<string>("");
-
-
-  // console.log(new OpSeq().to_string());
-  // console.log(new OpSeqPair().to_string());
 
   // test wasm
   useEffect(() => {
@@ -58,9 +54,9 @@ function App() {
         onDisconnected: () => {
           console.log("disconnected!!!");
         },
-        onPolling: (operation: UserOperation) => {
-          console.log(operation);
-        },
+        // onPolling: (operation: UserOperation) => {
+        //   console.log(operation);
+        // },
         editor,
       });
     }

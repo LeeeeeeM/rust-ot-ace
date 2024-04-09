@@ -5,7 +5,7 @@ use wasm_bindgen::prelude::*;
 
 mod util;
 
-#[wasm_bindgen] // Clone [clone], PartialEq, Debug [test]
+#[wasm_bindgen] // Clone [clone], PartialEq(assets), Debug(print) [test]
 #[derive(Clone, Default, Serialize, Deserialize, PartialEq, Debug)]
 pub struct OpSeq(OperationSeq);
 

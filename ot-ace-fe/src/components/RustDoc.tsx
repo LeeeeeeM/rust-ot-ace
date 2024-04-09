@@ -1,6 +1,19 @@
 import { OpSeq } from "ot-wasm";
 import { Ace } from "ace-builds";
 
+export interface UserOperation {
+  id: number;
+  operation: string;
+}
+
+interface ServerMessage {
+  Identity?: number;
+  History?: {
+    start: number;
+    operations: UserOperation[];
+  };
+}
+
 /** Options passed in to the RustDoc constructor. */
 export type RustDocOptions = {
   readonly uri: string;
@@ -8,7 +21,7 @@ export type RustDocOptions = {
   readonly onDisconnected?: () => unknown;
   readonly reconnectInterval?: number;
   readonly editor: Ace.Editor;
-  readonly onPolling: (operation: UserOperation) => void;
+  // readonly onPolling: (operation: UserOperation) => void;
   // readonly setValue: (value: string) => void;
 };
 
@@ -32,10 +45,11 @@ class RustDoc {
   private lastValue: string = "";
   private ignoreChanges: boolean = false;
 
-  private lastActions: AceAction[] = [];
-
   private me: number = -1;
   private revision: number = 0;
+
+  private outstanding?: OpSeq;
+  private buffer?: OpSeq;
 
   constructor(readonly options: RustDocOptions) {
     this.editor = options.editor;
@@ -85,6 +99,44 @@ class RustDoc {
     };
   }
 
+  private serverAck() {
+    if (!this.outstanding) {
+      console.log("no local current operation, ignore");
+      return;
+    }
+    this.outstanding = this.buffer;
+    this.buffer = undefined;
+    if (this.outstanding) {
+      this.sendOperation(this.outstanding);
+    }
+  }
+
+  private applyServer(operation: OpSeq) {
+    if (this.outstanding) {
+      const pair = this.outstanding.transform(operation)!;
+      this.outstanding = pair.first();
+      operation = pair.second();
+      if (this.buffer) {
+        const pair = this.buffer.transform(operation)!;
+        this.buffer = pair.first();
+        operation = pair.second();
+      }
+    }
+    this.applyOperation(operation);
+  }
+
+  private applyClient(operation: OpSeq) {
+    // console.log(operation, this.outstanding)
+    if (!this.outstanding) {
+      this.sendOperation(operation);
+      this.outstanding = operation;
+    } else if (!this.buffer) {
+      this.buffer = operation;
+    } else {
+      this.buffer = this.buffer.compose(operation);
+    }
+  }
+
   private handleMessage(msg: ServerMessage) {
     // console.log(msg, "message");
     if (msg.Identity !== undefined) {
@@ -101,12 +153,12 @@ class RustDoc {
       for (let i = this.revision - start; i < operations.length; i++) {
         const { id, operation } = operations[i];
         this.revision++;
-        this.options.onPolling(operations[i]);
+        // this.options.onPolling(operations[i]);
         if (id === this.me) {
-          console.log("this is me, ignore...");
+          this.serverAck();
         } else {
           const op: OpSeq = OpSeq.from_str(JSON.stringify(operation));
-          this.applyOperation(op);
+          this.applyServer(op);
         }
       }
       return;
@@ -132,19 +184,7 @@ class RustDoc {
     // console.log("after change...");
   }
 
-  public sendOperation(operation: OpSeq, action: AceAction) {
-    this.lastActions.push(action);
-    const [remove, insert] = this.lastActions;
-    setTimeout(() => {
-      this.lastActions = [];
-    }, 20);
-    // remove & insert at the same time，increase the revision
-    if (remove === "remove" && insert === "insert") {
-      // done
-      // console.log('insert & remove')
-      this.revision++;
-    }
-
+  public sendOperation(operation: OpSeq) {
     const op = operation.to_string();
     // console.log(op, "operation");
     this.ws?.send(`{"Edit":{"revision":${this.revision},"operation":${op}}}`);
@@ -182,23 +222,10 @@ class RustDoc {
 
       operation = operation.compose(changeOp)!;
 
-      this.sendOperation(operation, action);
+      this.applyClient(operation);
       this.lastValue = this.editor.getValue();
     }
   }
-}
-
-export interface UserOperation {
-  id: number;
-  operation: unknown;
-}
-
-interface ServerMessage {
-  Identity?: number;
-  History?: {
-    start: number;
-    operations: UserOperation[];
-  };
 }
 
 export default RustDoc;
