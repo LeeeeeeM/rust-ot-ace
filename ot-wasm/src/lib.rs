@@ -10,17 +10,27 @@ mod util;
 pub struct OpSeq(OperationSeq);
 
 #[wasm_bindgen] // for transform
-#[derive(Clone, Default)]
+#[derive(Clone, Default, Serialize)]
 pub struct OpSeqPair(OpSeq, OpSeq);
 
 #[wasm_bindgen]
 impl OpSeqPair {
+
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     pub fn first(&self) -> OpSeq {
         self.0.clone()
     }
 
     pub fn second(&self) -> OpSeq {
         self.1.clone()
+    }
+
+    pub fn to_string(&self) -> String {
+        serde_json::to_string(self).expect("json serialization failure")
     }
 }
 

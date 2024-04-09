@@ -8,7 +8,7 @@ import "ace-builds/src-noconflict/theme-sqlserver";
 import "./App.css";
 import RustDoc, { UserOperation } from "./components/RustDoc";
 import { getWsUri } from "./utils";
-import { gen_hello_string, OpSeq } from "ot-wasm";
+import { gen_hello_string, OpSeq, OpSeqPair } from "ot-wasm";
 
 window.OpSeq = OpSeq;
 
@@ -19,6 +19,10 @@ function App() {
   const activeRef = useRef<boolean>(false);
   const [editor, setEditor] = useState<Ace.Editor | null>(null);
   const [value, setValue] = useState<string>("");
+
+
+  // console.log(new OpSeq().to_string());
+  // console.log(new OpSeqPair().to_string());
 
   // test wasm
   useEffect(() => {
