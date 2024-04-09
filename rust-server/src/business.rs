@@ -15,7 +15,7 @@ pub struct RustDoc {
     count: AtomicU64,
     // inner notify
     notify: Notify,
-    broadcaster: broadcast::Sender<ServerMessage>,
+    // broadcaster: broadcast::Sender<ServerMessage>,
 }
 
 #[derive(Default, Serialize, Deserialize)]
@@ -57,7 +57,7 @@ impl From<ServerMessage> for Message {
 
 impl RustDoc {
     pub fn new() -> Self {
-        let (tx, _) = broadcast::channel(16);
+        // let (tx, _) = broadcast::channel(16);
         // let state = State {
         //     text: String::from("rust_doc"),
         //     count: 0,
@@ -68,7 +68,7 @@ impl RustDoc {
             state: RwLock::new(state),
             count: AtomicU64::new(0),
             notify: Notify::new(),
-            broadcaster: tx,
+            // broadcaster: tx,
         }
     }
 
@@ -151,7 +151,7 @@ impl RustDoc {
 
     async fn handle_connection(&self, id: u64, mut socket: WebSocket) -> Result<()> {
         // socket init message
-        let mut rx = self.broadcaster.subscribe();
+        // let mut rx = self.broadcaster.subscribe();
 
         let mut revision: usize = self.send_initial(id, &mut socket).await?;
 
@@ -164,9 +164,10 @@ impl RustDoc {
 
             tokio::select! {
                 _ = notified => {}
-                update = rx.recv() => {
-                    socket.send(update?.into()).await?;
-                }
+                // update = rx.recv() => {
+                //     let info = update?.into();
+                //     socket.send(info).await?;
+                // }
                 result = socket.next() => {
                     match result {
                         None => break,
