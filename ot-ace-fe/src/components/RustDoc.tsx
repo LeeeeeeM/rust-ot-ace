@@ -25,16 +25,6 @@ export type RustDocOptions = {
   // readonly setValue: (value: string) => void;
 };
 
-type AceAction = "insert" | "remove";
-
-interface AceEvent {
-  action: AceAction;
-  start: {
-    column: number;
-  };
-  lines: string[];
-}
-
 /** Browser client for RustDoc. */
 class RustDoc {
   private ws?: WebSocket;
@@ -53,7 +43,7 @@ class RustDoc {
 
   constructor(readonly options: RustDocOptions) {
     this.editor = options.editor;
-    this.editor.on("change", (event: AceEvent) => {
+    this.editor.on("change", (event: Ace.Delta) => {
       this.onChange(event);
     });
     this.tryConnect();
@@ -190,7 +180,7 @@ class RustDoc {
     this.ws?.send(`{"Edit":{"revision":${this.revision},"operation":${op}}}`);
   }
 
-  private onChange(event: AceEvent) {
+  private onChange(event: Ace.Delta) {
     // console.log("changing ...");
     if (!this.ignoreChanges) {
       const content = this.lastValue;
